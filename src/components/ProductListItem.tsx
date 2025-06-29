@@ -1,9 +1,9 @@
 import { StyleSheet } from 'react-native';
 
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image , Pressable} from 'react-native';
 import Colors from '@/src/constants/Colors';
 import { Product } from '@/src/types';
-
+import {Link } from 'expo-router';
 
 export const defaultPizzaImage='https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png'
 
@@ -15,18 +15,21 @@ type ProductListItemProps = {
 const ProductListItem= ({product}: ProductListItemProps)=> {
   
   return (
-     <View style={styles.container}>
+    // Ako se ovaj href ne resi <Link href={`/${product.id}` as any} asChild> probaj da dodas as any
+    <Link href ={`/menu/${product.id}` } asChild> 
+        <Pressable  style={styles.container} >
 
-      <Image source={{uri: product.image || defaultPizzaImage }} 
-      style={styles.image}
-      resizeMode='contain' // Ukoliko se velicina containera i sline ne ne poklapaju, slika ce biti smanjena da stane u container zato koristimo ovo
-      />
+            <Image source={{uri: product.image || defaultPizzaImage }} 
+            style={styles.image}
+            resizeMode='contain' // Ukoliko se velicina containera i sline ne ne poklapaju, slika ce biti smanjena da stane u container zato koristimo ovo
+            />
 
 
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.price}>${product.price}</Text>
-      
-    </View>
+            <Text style={styles.title}>{product.name}</Text>
+            <Text style={styles.price}>${product.price}</Text>
+        
+        </Pressable>
+    </Link>
   );
 }
 export default ProductListItem;
