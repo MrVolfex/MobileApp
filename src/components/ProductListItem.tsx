@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Text, View, Image , Pressable} from 'react-native';
 import Colors from '@/src/constants/Colors';
 import { Product } from '@/src/types';
-import {Link } from 'expo-router';
+import {Link, useSegments } from 'expo-router';
 
 export const defaultPizzaImage='https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png'
 
@@ -13,7 +13,10 @@ type ProductListItemProps = {
 };
 
 const ProductListItem= ({product}: ProductListItemProps)=> {
+  const segments=useSegments();
   
+
+
   return (
     // Ako se ovaj href ne resi <Link href={`/${product.id}` as any} asChild> probaj da dodas as any
     <Link href ={`/menu/${product.id}` } asChild> 
