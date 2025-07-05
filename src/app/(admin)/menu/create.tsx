@@ -1,11 +1,13 @@
 import { View, Text , StyleSheet,TextInput,Image,Alert} from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Button from '@/src/components/Button';
 import { useState } from 'react';
 import { defaultPizzaImage } from '@/src/components/ProductListItem';
 import Colors from '@/src/constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useDeleteProduct, useInsertProduct, useProduct, useUpdateProduct } from '@/src/api/products';
+import { parse } from '@babel/core';
 
 const CreateProductScreen = () => {
 
@@ -15,8 +17,30 @@ const CreateProductScreen = () => {
 
     const [image, setImage] = useState<string | null>(null);
 
-    const {id} = useLocalSearchParams();
+
+
+    const {id:idString} = useLocalSearchParams();
+    const id = parseFloat(typeof idString === 'string' ? idString : idString?.[0]); // Convert id to a number or null if not present
     const isUpdating = !!id; // Check if we are updating an existing product  
+
+
+
+
+    const{mutate: insertProduct}=useInsertProduct();
+    const {mutate: updateProduct} = useUpdateProduct();
+    const {data: updatingProduct}=useProduct(id)
+    const {mutate: deleteProduct} = useDeleteProduct(); 
+
+    const router= useRouter();
+
+
+    useEffect(() => {
+      if(updatingProduct){
+        setName(updatingProduct.name);
+        setPrice(updatingProduct.price.toString());
+        setImage(updatingProduct.image || null); // Set image if available
+      }
+    }, [updatingProduct]);
 
 
 
@@ -49,12 +73,19 @@ const CreateProductScreen = () => {
         if(!validateInput()){
             return;
         }
+        updateProduct({
+          id,
+          name,
+          price: parseFloat(price),
+          image
+        },{
+          onSuccess: () => {
+            resetFields();
+            router.back();
+          }
+        });
 
-        console.warn('Updateing product ');
 
-
-        
-        resetFields();
     }
     const onCreate = () => {
 
@@ -62,7 +93,17 @@ const CreateProductScreen = () => {
             return;
         }
 
-        console.warn('Creating product ');
+        
+        insertProduct({
+            name,
+            price: parseFloat(price),
+            image,
+        },{
+          onSuccess: () => {
+            resetFields();
+            router.back();
+          }
+        });
 
 
         
@@ -86,32 +127,18 @@ const CreateProductScreen = () => {
 
   const onSubmit= () => {
     if(isUpdating){
-        onUpdateCreate
+        onUpdateCreate();
     }else{
       onCreate();
-    }
-
-    console.warn('Submit clicked');
-    
-    // Here you would typically send the data to your backend or API
-    // For now, we just reset the fields
-    resetFields();
-    
-    // If updating, you might want to handle that logic here as well
-    if(isUpdating){
-        console.warn('Updating product with id:', id);
-        // Update logic goes here
-    } else {
-        console.warn('Creating new product');
-        // Create logic goes here
     }
   }
 
   const onDelete = () => {
-    console.warn('Deleting product with id:', id);
-    // Delete logic goes here
-    // After deletion, you might want to navigate back or reset the form
-    resetFields();
+    deleteProduct(id,{onSuccess: () => {
+      resetFields();
+      router.replace('/(admin)/menu');
+    }});
+    
   }
 
   const confirmDelete = () => {
