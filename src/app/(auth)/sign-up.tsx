@@ -1,12 +1,26 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import React, { useState } from 'react';
 import Button from '../../components/Button';
 import Colors from '../../constants/Colors';
 import { Link, Stack } from 'expo-router';
 
+import {supabase} from '../../lib/supabase'; // Ensur
+
 const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+
+  async function signUpWithEamil(){
+    setLoading(true);
+   const {error} = await supabase.auth.signUp({email,password})
+
+    if(error) Alert.alert('Error signing in:', error.message);
+
+    setLoading(false);
+  }
+
 
   return (
     <View style={styles.container}>
@@ -29,7 +43,7 @@ const SignUpScreen = () => {
         secureTextEntry
       />
 
-      <Button text="Create account" />
+      <Button onPress={signUpWithEamil}  disabled={loading} text={loading? "Creating account...":"Create account" }/>
       <Link href="/sign-in" style={styles.textButton}>
         Sign in
       </Link>
