@@ -2,14 +2,15 @@ import { StyleSheet } from 'react-native';
 
 import { Text, View, Image , Pressable} from 'react-native';
 import Colors from '@/src/constants/Colors';
-import { Product } from '@/src/types';
+
 import {Link, useSegments } from 'expo-router';
+import { Tables } from '../database.types';
 
 export const defaultPizzaImage='https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png'
 
 
 type ProductListItemProps = {
-  product: Product;
+  product: Tables<'products'>; // Using Tables type to ensure type safety
 };
 
 const ProductListItem= ({product}: ProductListItemProps)=> {
