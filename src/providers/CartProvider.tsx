@@ -2,6 +2,10 @@ import { createContext,PropsWithChildren,useContext, useState } from "react";
 import { CartItem} from "../types";
 import{randomUUID} from 'expo-crypto';
 import { Tables } from "../database.types";
+import { useInsertOrder } from "../api/orders";
+import { useRouter } from "expo-router";
+import { useInsertOrderItems } from "../api/order-items";
+import CartListItem from "../components/CartListItem";
 
 
 type Product= Tables<'products'>; // Using Tables type to ensure type safety
@@ -11,6 +15,7 @@ type CartType= {
     addItem:(product: Product, size: CartItem['size'])=> void;
     updateQuantity:(ItemId:string, amount: -1 |1)=> void;
     total:number;
+    checkout: () => void;
 
 }
 
@@ -18,12 +23,17 @@ type CartType= {
 export const CartContext= createContext<CartType>({
     items: [],
     addItem: () => {}, 
-    updateQuantity: () => {}, // Prazna funkcija koja ce biti zamenjena u CartProvider
+    updateQuantity: () => {}, 
     total: 0, 
+    checkout: () => {}, 
 });
 
 const CartProvider= ({children} : PropsWithChildren)=> {
     const [items, setItems] = useState<CartItem[]>([]);
+
+    const {mutate: insertOrder}=useInsertOrder();
+    const router =  useRouter();
+    const {mutate : insertOrderItems}=useInsertOrderItems();
 
     const addItem= (product: Product, size: CartItem['size'])=> {
         
@@ -54,15 +64,46 @@ const CartProvider= ({children} : PropsWithChildren)=> {
      };
       
 
+    const clearCart= ()=> {
+        setItems([]);
+    }
+
+    const checkout=  ()=> {
+        console.warn('Checkout');
+        insertOrder({total}, {onSuccess: saveOrderItems}); 
+    }
+
+
+    const saveOrderItems = (order: Tables<'orders'>)=> {
+        
+        const orderItems=items.map(cartItem => ({
+            order_id: order.id,
+            product_id: cartItem.product_id,
+            quantity: cartItem.quantity,
+            size: cartItem.size,
+        }));
+
+        insertOrderItems(orderItems,
+            {onSuccess: () => {
+                console.log(order);
+                clearCart(); 
+                router.push(`/(user)/orders/${order.id}`);
+        }});
+       
+    }
+
+
     
     const total=items.reduce((sum, item) => (sum += item.product.price*item.quantity),0);
 
     return (
-        <CartContext.Provider value={{items, addItem,updateQuantity,total}}>
+        <CartContext.Provider value={{items, addItem,updateQuantity,total,checkout}}>
             {children}
         </CartContext.Provider>
     );
 }
+
+
 export default CartProvider;
 
 export const useCart= ()=> useContext(CartContext);  // objedinjujemo CartContext i useContext u jednu funkciju koja vraca CartContext, 
