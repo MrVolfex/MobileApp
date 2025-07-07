@@ -70,16 +70,19 @@ const CreateProductScreen = () => {
 
     }
 
-    const onUpdateCreate = () => {
+    const onUpdateCreate = async() => {
 
         if(!validateInput()){
             return;
         }
+
+        const imagePath = await uploadImage();
+
         updateProduct({
           id,
           name,
           price: parseFloat(price),
-          image
+          image : imagePath
         },{
           onSuccess: () => {
             resetFields();
@@ -113,7 +116,7 @@ const CreateProductScreen = () => {
         resetFields();
     }
     const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
+    
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
