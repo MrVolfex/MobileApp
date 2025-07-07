@@ -1,5 +1,8 @@
 import { View, Text,Button } from 'react-native'
 import React from 'react'
+import { supabase } from '@/src/lib/supabase'
+
+
 
 const ProfileScreen = () => {
   return (
@@ -7,6 +10,7 @@ const ProfileScreen = () => {
       <Text>ProfileScreen</Text>
         
         <Button title='Sign out' onPress={()=>console.warn("sign otu")}/>
+        
 
     </View>
   )
